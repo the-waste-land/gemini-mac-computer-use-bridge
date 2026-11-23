@@ -1,8 +1,13 @@
-# Gemini for Mac Computer Use Bridge
+# Gemini for Mac & Antigravity CLI Computer Use MCP
 
 [English](./README_EN.md) | 简体中文
 
-让开启了 macOS App Sandbox 的 **Gemini for Mac**（以及其他受沙盒限制的 MCP 客户端）稳定使用 [`codex-computer-use-mcp`](https://github.com/tmustier/codex-computer-use-mcp)（`cua_repl`），实现操控 macOS 桌面应用和已登录浏览器标签页。
+让 **Gemini for Mac**（受 macOS App Sandbox 限制）和 **Antigravity CLI**（非沙盒终端）都能一键接入 [`codex-computer-use-mcp`](https://github.com/tmustier/codex-computer-use-mcp)（`cua_repl`），实现操控 macOS 桌面应用和已登录浏览器标签页。
+
+| 客户端 | 接入模式 | 一键命令 |
+|---|---|---|
+| **Gemini for Mac** | 本地回环 HTTP 网关 + 轻量 stdio 桥接（绕开 App Sandbox 对 `/Applications` 的限制） | `bash scripts/install.sh` |
+| **Antigravity CLI** | 原生 stdio 直连（写入 `~/.gemini/config/mcp_config.json`） | `bash scripts/install-antigravity.sh` |
 
 ---
 
@@ -88,9 +93,23 @@ bash scripts/install.sh
 
 ---
 
-## 附：Antigravity CLI 直接接入方式
+## Antigravity CLI 一键接入
 
-非沙盒终端客户端（如 Antigravity CLI）可以直接配置 stdio，无需经过 HTTP 桥接。在 `~/.gemini/config/mcp_config.json` 中加入：
+非沙盒终端客户端（如 Antigravity CLI）可以直接走原生 stdio 接入，无需经过 HTTP 桥接：
+
+```bash
+bash scripts/install-antigravity.sh
+```
+
+脚本会自动检测 Node.js >= 22、安装或复用 `codex-computer-use-mcp`、备份并无损合并写入 `~/.gemini/config/mcp_config.json`，并运行 stdio MCP 握手与 `computer_use_status` 自检。完成后**新开一个 Antigravity CLI 会话**即可使用 `js` / `js_reset` / `computer_use_status`。
+
+如需移除 Antigravity CLI 中的配置：
+
+```bash
+bash scripts/install-antigravity.sh --uninstall
+```
+
+手动配置参考（`~/.gemini/config/mcp_config.json`）：
 
 ```json
 {

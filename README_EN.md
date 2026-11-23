@@ -1,8 +1,13 @@
-# Gemini for Mac Computer Use Bridge
+# Gemini for Mac & Antigravity CLI Computer Use MCP
 
 English | [简体中文](./README.md)
 
-A zero-dependency loopback HTTP-to-stdio MCP bridge that lets macOS App-Sandboxed MCP clients—such as **Gemini for Mac**—use [`codex-computer-use-mcp`](https://github.com/tmustier/codex-computer-use-mcp) (`cua_repl`) to control native macOS apps and browser tabs.
+One-command setup to enable [`codex-computer-use-mcp`](https://github.com/tmustier/codex-computer-use-mcp) (`cua_repl`) on macOS for both **Gemini for Mac** (via a zero-dependency loopback HTTP-to-stdio MCP bridge for App-Sandboxed apps) and **Antigravity CLI** (direct native stdio).
+
+| Client | Transport | One-command setup |
+|---|---|---|
+| **Gemini for Mac** | Loopback HTTP gateway + lightweight stdio bridge | `bash scripts/install.sh` |
+| **Antigravity CLI** | Direct native stdio (`~/.gemini/config/mcp_config.json`) | `bash scripts/install-antigravity.sh` |
 
 ---
 
@@ -57,10 +62,19 @@ Then in **Gemini for Mac**:
    @cua-bridge call computer_use_status and js (await cua.listApps()) to list my running macOS apps
    ```
 
+### Antigravity CLI
+
+```bash
+bash scripts/install-antigravity.sh
+```
+
+This checks Node.js >= 22, installs or reuses `codex-computer-use-mcp`, backs up and merges `computer-use` into `~/.gemini/config/mcp_config.json`, and runs an end-to-end stdio self-test. Open a new Antigravity CLI session to start using `js`, `js_reset`, and `computer_use_status`.
+
 ## Uninstall
 
 ```bash
-bash scripts/uninstall.sh
+bash scripts/uninstall.sh                    # Gemini for Mac bridge + LaunchAgent
+bash scripts/install-antigravity.sh --uninstall  # Antigravity CLI entry
 ```
 
 ## License
