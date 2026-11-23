@@ -35,8 +35,8 @@ flowchart LR
     M -->|"Signed runtime"| Mac["macOS Apps & Browsers"]
 ```
 
-- **Server (`src/server.mjs`)**: Runs as a user `LaunchAgent`, binds strictly to `127.0.0.1:18765`, requires a `0600` random Bearer token, and hosts `codex-computer-use-mcp`.
-- **Bridge (`src/bridge.mjs` / `bridge.sh`)**: A tiny stdio JSON-RPC forwarder for Gemini for Mac. It only reads `~/.local/share/cua-http-mcp/token` and posts to `127.0.0.1:18765/mcp`, which works out of the box with Gemini's **Default** sandbox setting (`~/.local`, `~/.nvm`, and outbound network are allowed by default). No app patching or sandbox disabling required.
+- **Server (`src/server.mjs`)**: Runs as a user `LaunchAgent`, binds strictly to `127.0.0.1:18765`, requires a `0600` random Bearer token, exposes standard **MCP Streamable HTTP** (`POST /mcp`, `GET /mcp` SSE stream with keepalive, `DELETE /mcp`, `Mcp-Session-Id`), and hosts `codex-computer-use-mcp`.
+- **Bridge (`src/bridge.mjs` / `bridge.sh`)**: A tiny stdio-to-Streamable-HTTP forwarder for Gemini for Mac (whose `Cloud MCP` tab only accepts remote HTTPS/OAuth URLs). It only reads `~/.local/share/cua-http-mcp/token` and talks to `127.0.0.1:18765/mcp`, which works out of the box with Gemini's **Default** sandbox setting (`~/.local`, `~/.nvm`, and outbound network are allowed by default). No app patching or sandbox disabling required.
 
 ---
 
@@ -77,6 +77,9 @@ Then in **Gemini for Mac**:
    ```text
    @cua-bridge call computer_use_status and js (await cua.listApps()) to list my running macOS apps
    ```
+
+> [!IMPORTANT]
+> If you previously added `codex-computer-use-mcp` directly as a Local MCP (e.g. `computer-use`), **remove that old entry** in Gemini for Mac. A sandbox-blocked direct MCP entry can hang during initialization and cause Gemini's entire MCP tool discovery to time out (25s), blocking `@cua-bridge` as well.
 
 > [!TIP]
 > Override port or Node path if needed:

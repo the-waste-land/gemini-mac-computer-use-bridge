@@ -101,6 +101,10 @@ cat > "$PLIST" <<EOF
 EOF
 
 launchctl bootout "gui/$(id -u)/com.local.cua-http-mcp" 2>/dev/null || true
+for _ in 1 2 3 4 5; do
+  launchctl print "gui/$(id -u)/com.local.cua-http-mcp" >/dev/null 2>&1 || break
+  sleep 0.5
+done
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 sleep 2
 

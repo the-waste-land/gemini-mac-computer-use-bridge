@@ -35,8 +35,8 @@ flowchart LR
     M -->|"官方签名运行时"| Mac["macOS 应用 & 浏览器"]
 ```
 
-- **服务端（`server.mjs`）**：通过 `LaunchAgent` 在你的登录会话后台常驻，仅监听本机回环 `127.0.0.1:18765`，使用 `0600` 随机 Bearer Token 鉴权，并托管 `codex-computer-use-mcp` 子进程。
-- **桥接端（`bridge.sh`）**：提供给 Gemini for Mac 的轻量 stdio MCP 客户端，只读取 `~/.local/share/cua-http-mcp/token` 并转发请求到 `127.0.0.1:18765/mcp`，完全契合 Gemini for Mac 的 **Default** Sandbox 规则（默认放行 `~/.local`、`~/.nvm` 和出站网络），不需要修改或关闭任何系统沙盒。
+- **服务端（`server.mjs`）**：通过 `LaunchAgent` 在你的登录会话后台常驻，仅监听本机回环 `127.0.0.1:18765`，使用 `0600` 随机 Bearer Token 鉴权，提供标准 **MCP Streamable HTTP** 接口（`POST /mcp`、`GET /mcp` SSE 保活流、`DELETE /mcp`、`Mcp-Session-Id`），并托管 `codex-computer-use-mcp` 子进程。
+- **桥接端（`bridge.sh`）**：提供给 Gemini for Mac 的轻量 stdio-to-Streamable-HTTP 桥接客户端（Gemini for Mac 的 `Cloud MCP` 仅支持公网 HTTPS/OAuth）。它只读取 `~/.local/share/cua-http-mcp/token` 并转发请求到 `127.0.0.1:18765/mcp`，完全契合 Gemini for Mac 的 **Default** Sandbox 规则（默认放行 `~/.local`、`~/.nvm` 和出站网络），不需要修改或关闭任何系统沙盒。
 
 ---
 
@@ -80,6 +80,9 @@ bash scripts/install.sh
    - **Command**：`/Users/<你的用户名>/.local/share/cua-http-mcp/bridge.sh`（直接复制安装脚本最后打印的完整路径）
    - **Sandbox settings**：保持 **`Default`** 即可（默认包含 `~/.local`、`~/.nvm` 与出站网络权限）
 4. 点击 **Next** → 勾选风险确认 → 点击 **Connect**。
+
+> [!IMPORTANT]
+> 如果你之前在 Gemini for Mac 中直接添加过 `codex-computer-use-mcp`（如旧的 `computer-use` Local MCP），**请务必将其删除**。残留的沙盒受阻直连配置会在握手时卡死，导致 Gemini 整个 MCP 工具列表拉取触发 25 秒超时，进而连带阻塞 `@cua-bridge`。
 
 ### 验证是否生效
 

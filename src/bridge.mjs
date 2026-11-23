@@ -9,6 +9,8 @@ const PORT = Number(process.env.CUA_BRIDGE_PORT || 18765);
 const URL = process.env.CUA_BRIDGE_URL || `http://127.0.0.1:${PORT}/mcp`;
 const TOKEN = fs.readFileSync(path.join(STATE_DIR, "token"), "utf8").trim();
 
+let sessionId = null;
+
 const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 
 rl.on("line", async (line) => {
@@ -23,14 +25,25 @@ rl.on("line", async (line) => {
   }
 
   try {
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json, text/event-stream",
+      "Authorization": `Bearer ${TOKEN}`,
+    };
+    if (sessionId) {
+      headers["Mcp-Session-Id"] = sessionId;
+    }
+
     const res = await fetch(URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${TOKEN}`,
-      },
+      headers,
       body: JSON.stringify(msg),
     });
+
+    const returnedSession = res.headers.get("mcp-session-id");
+    if (returnedSession) {
+      sessionId = returnedSession;
+    }
 
     if (res.status === 202) return;
 
@@ -52,4 +65,15 @@ rl.on("line", async (line) => {
       );
     }
   }
+});
+
+rl.on("close", () => {
+  if (!sessionId) return;
+  fetch(URL, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${TOKEN}`,
+      "Mcp-Session-Id": sessionId,
+    },
+  }).catch(() => {});
 });
